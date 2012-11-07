@@ -1,0 +1,9 @@
+UnityHeapEx is a managed heap snapshot tool for Unity3D. It works by gathering all
+managed references in your game and then traversing the whole object hierarchy and
+dumping it into xml file. By inspecting this file, you can get a pretty good idea
+of what is there in memory and find any memory leaks you might be having. To use
+it, just drop the files into Editor folder inside the project, and a new menu item
+should appear.
+
+UnityHeapEx has been originally created in Mail.Ru Games and was used to find
+memory leaks in Allods Adventure game.
