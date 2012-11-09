@@ -32,7 +32,7 @@ namespace UnityHeapEx
         {
             var name = type.Name;
             name = name.Replace( "<", "(" ).Replace( ">", ")" ); // makes XML easier to read
-            if (type.IsGenericType)
+            if (type.IsGenericType && !type.ContainsGenericParameters)
             {
                 name += "(" + String.Join(", ", type.GetGenericArguments().Select<Type, String>(GetFormattedName).ToArray()) +
                         ")";
