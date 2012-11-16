@@ -23,6 +23,9 @@ namespace UnityHeapEx
         private readonly HashSet<object> seenObjects = new HashSet<object>();
         private StreamWriter writer;
 
+        // when true, types w/o any static field (and skipped types) are removed from output
+        public static bool SkipEmptyTypes = true;
+
         /* TODO
          * ignore cached delegates for lambdas(?)
          * better type names
@@ -54,11 +57,14 @@ namespace UnityHeapEx
 				// enumerate all static fields
                 foreach( var type in allTypes )
                 {
-                    writer.WriteLine( "  <type name=\"{0}\">", SecurityElement.Escape( type.GetFormattedName() ) );
+                    bool tagWritten = false;
+                    if(!SkipEmptyTypes)
+                        writer.WriteLine( "  <type name=\"{0}\">", SecurityElement.Escape( type.GetFormattedName() ) );
                     if(type.IsEnum)
                     {
 						// enums don't hold anything but their constants
-                        writer.WriteLine("<ignored reason=\"IsEnum\"/>");
+                        if( !SkipEmptyTypes )
+                            writer.WriteLine( "<ignored reason=\"IsEnum\"/>" );
                     }
                     else if(type.IsGenericType)
                     {
@@ -66,7 +72,8 @@ namespace UnityHeapEx
 						// know actual type parameters of the class containing generics, and we have no way
 						// of knowing these - they depend on what concrete type were ever instantiated.
 						// This may miss a lot of stuff if generics are heavily used.
-                        writer.WriteLine( "<ignored reason=\"IsGenericType\"/>" );
+                        if( !SkipEmptyTypes )
+                            writer.WriteLine( "<ignored reason=\"IsGenericType\"/>" );
                     }
                     else
                     {
@@ -74,6 +81,12 @@ namespace UnityHeapEx
                         {
                             try
                             {
+                                if(SkipEmptyTypes && !tagWritten)
+                                {
+                                    writer.WriteLine( "  <type name=\"{0}\">", SecurityElement.Escape( type.GetFormattedName() ) );
+                                    tagWritten = true;
+                                }
+
                                 int size = ReportField( null, "    ", fieldInfo );
                                 totalSize += size;
                             }
@@ -84,7 +97,8 @@ namespace UnityHeapEx
                             }
                         }
                     }
-                    writer.WriteLine( "  </type>" );
+                    if( !SkipEmptyTypes || tagWritten )
+                        writer.WriteLine( "  </type>" );
                 }
                 writer.WriteLine( "</statics>" );
 				
